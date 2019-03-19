@@ -37,7 +37,7 @@ get-latest-json() {
 
 find-latest-version() {
   json=$1
-  version=$(echo "$json" | jq -r .tag_name)
+  version=$(echo "$json" | sed -n '/tag_name/s/^.*: *"\(.*\)".*$/\1/gp')
   if [[ $version == "null" ]]; then
     report-error "failed to get version: $json"
   fi
