@@ -5,6 +5,18 @@ formulate init user/name     # creates a new formula
 formulate update formula.rb  # updates a formula
 ```
 
+## Installation
+### Homebrew
+```shell
+brew install itchyny/tap/formulate
+```
+
+### Or just copy the script
+```shell
+git clone https://github.com/itchyny/formulate
+cd formulate/
+```
+
 ## Author
 itchyny (https://github.com/itchyny)
 
