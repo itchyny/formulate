@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euo pipefail
+
+cmdname="$(basename "${BASH_SOURCE[0]}")"
+
+report-error() {
+  echo "$cmdname: $1" > /dev/stderr
+  exit 1
+}
+
+if [[ $# -lt 1 ]]; then
+  report-error "unknown command"
+elif [[ $# -lt 2 ]]; then
+  report-error "unknown target"
+elif [[ $# -gt 2 ]]; then
+  report-error "too many arguments"
+fi
+
+main() {
+  subcmd=$1
+  target=$2
+  case "$subcmd" in
+    *)
+      report-error "unknown command: $subcmd"
+      ;;
+  esac
+}
+
+main "$1" "$2"
