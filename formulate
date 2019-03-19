@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2001
 set -euo pipefail
 
 cmdname="$(basename "${BASH_SOURCE[0]}")"
@@ -46,6 +47,14 @@ get-target-name() {
   echo "${target##*/}"
 }
 
+get-sha256() {
+  url=$1
+  echo "Fetching $url" > /dev/stderr
+  shasum=$(curl -s -L "$url" | sha256sum | cut -f1 -d ' ')
+  echo "Got sha256sum: $shasum" > /dev/stderr
+  echo "$shasum"
+}
+
 init() {
   target=$1
   name=$(get-target-name "$target")
@@ -56,7 +65,7 @@ init() {
   version=$(find-latest-version "$json")
   echo "Found version $version" > /dev/stderr
   url=$(find-download-url "$json")
-  sha256=$(curl -s -L "$url" | sha256sum | cut -f1 -d ' ')
+  sha256=$(get-sha256 "$url")
   homepage="https://github.com/$target"
   echo "class $formula_name < Formula
   homepage '$homepage'
@@ -75,12 +84,52 @@ end" > "$output"
   echo "Created $output" > /dev/stderr
 }
 
+get-target-from-formula() {
+  target_file=$1
+  sed -n "/homepage.*github.com/s|^.*github.com/\\(.*\\)'|\\1|gp" < "$target_file" | head -n1
+}
+
+update() {
+  output=$1
+  echo "Updating $output" > /dev/stderr
+  target=$(get-target-from-formula "$output")
+  if [[ $target == "" ]]; then
+    report-error "failed to find target: $output"
+  fi
+  name=$(get-target-name "$target")
+  json=$(get-latest-json "$target")
+  version=$(find-latest-version "$json")
+  echo "Found version $version" > /dev/stderr
+  url=""
+  outtmp=$(mktemp -t "$name")
+  trap 'rm -rf $outtmp' EXIT SIGHUP SIGINT SIGQUIT SIGTERM
+  while IFS= read -r line; do
+    if echo "$line" | grep '^ *version ' > /dev/null; then
+      line=$(echo "$line" | sed 's/[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/'"$version"'/')
+    elif echo "$line" | grep '^ *url ' > /dev/null; then
+      line=$(echo "$line" | sed 's/[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/'"$version"'/')
+      url=$(echo "$line" | sed "s/^.*'\\(.*\\)'.*$/\\1/")
+    elif echo "$line" | grep '^ *sha256 ' > /dev/null; then
+      if [[ $url == "" ]]; then
+        report-error "url not found: $line"
+      fi
+      sha256=$(get-sha256 "$url")
+      line=$(echo "$line" | sed "s/'.*'/'$sha256'/")
+    fi
+    echo "$line"
+  done < "$output" > "$outtmp"
+  mv "$outtmp" "$output"
+  echo "Updated $output" > /dev/stderr
+}
+
 main() {
   subcmd=$1
-  target=$2
   case "$subcmd" in
     init)
-      init "$target"
+      init "$2"
+      ;;
+    update)
+      update "$2"
       ;;
     *)
       report-error "unknown command: $subcmd"
