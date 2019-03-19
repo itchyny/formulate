@@ -2,10 +2,12 @@
 # shellcheck disable=SC2001
 set -euo pipefail
 
-cmdname="$(basename "${BASH_SOURCE[0]}")"
+report-log() {
+  echo "$1" > /dev/stderr
+}
 
 report-error() {
-  echo "$cmdname: $1" > /dev/stderr
+  echo "$1" > /dev/stderr
   exit 1
 }
 
@@ -20,7 +22,7 @@ fi
 get-latest-json() {
   target=$1
   api_url="https://api.github.com/repos/$target/releases/latest"
-  echo "Fetching $api_url" > /dev/stderr
+  report-log "Fetching $api_url"
   curl -s "$api_url"
 }
 
@@ -49,9 +51,9 @@ get-target-name() {
 
 get-sha256() {
   url=$1
-  echo "Fetching $url" > /dev/stderr
+  report-log "Fetching $url"
   shasum=$(curl -s -L "$url" | sha256sum | cut -f1 -d ' ')
-  echo "Got sha256sum: $shasum" > /dev/stderr
+  report-log "Got sha256sum: $shasum"
   echo "$shasum"
 }
 
@@ -60,10 +62,10 @@ init() {
   name=$(get-target-name "$target")
   formula_name=$(echo "$name" | perl -ne 'print ucfirst')
   output="$name.rb"
-  echo "Creating $output" > /dev/stderr
+  report-log "Creating $output"
   json=$(get-latest-json "$target")
   version=$(find-latest-version "$json")
-  echo "Found version $version" > /dev/stderr
+  report-log "Found version $version"
   url=$(find-download-url "$json")
   sha256=$(get-sha256 "$url")
   homepage="https://github.com/$target"
@@ -81,7 +83,7 @@ init() {
     system \"#{bin}/$name\", '--version'
   end
 end" > "$output"
-  echo "Created $output" > /dev/stderr
+  report-log "Created $output"
 }
 
 get-target-from-formula() {
@@ -91,7 +93,7 @@ get-target-from-formula() {
 
 update() {
   output=$1
-  echo "Updating $output" > /dev/stderr
+  report-log "Updating $output"
   target=$(get-target-from-formula "$output")
   if [[ $target == "" ]]; then
     report-error "failed to find target: $output"
@@ -99,7 +101,7 @@ update() {
   name=$(get-target-name "$target")
   json=$(get-latest-json "$target")
   version=$(find-latest-version "$json")
-  echo "Found version $version" > /dev/stderr
+  report-log "Found version $version"
   url=""
   outtmp=$(mktemp -t "$name")
   trap 'rm -rf $outtmp' EXIT SIGHUP SIGINT SIGQUIT SIGTERM
@@ -119,7 +121,7 @@ update() {
     echo "$line"
   done < "$output" > "$outtmp"
   mv "$outtmp" "$output"
-  echo "Updated $output" > /dev/stderr
+  report-log "Updated $output"
 }
 
 main() {
