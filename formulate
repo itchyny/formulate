@@ -2,6 +2,8 @@
 # shellcheck disable=SC2001
 set -euo pipefail
 
+cmdname="$(basename "${BASH_SOURCE[0]}")"
+
 report-log() {
   echo "$1" > /dev/stderr
 }
@@ -11,11 +13,18 @@ report-error() {
   exit 1
 }
 
+usage() {
+  echo "Usage: $cmdname init user/name or $cmdname update formula.rb"
+}
+
 if [[ $# -lt 1 ]]; then
+  usage
   report-error "unknown command"
 elif [[ $# -lt 2 ]]; then
+  usage
   report-error "unknown target"
 elif [[ $# -gt 2 ]]; then
+  usage
   report-error "too many arguments"
 fi
 
@@ -134,6 +143,7 @@ main() {
       update "$2"
       ;;
     *)
+      usage
       report-error "unknown command: $subcmd"
       ;;
   esac
