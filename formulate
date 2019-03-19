@@ -112,7 +112,7 @@ update() {
   version=$(find-latest-version "$json")
   report-log "Found version $version"
   url=""
-  outtmp=$(mktemp -t "$name")
+  outtmp=$(mktemp -t "$name.XXXXXXXX")
   trap 'rm -rf $outtmp' EXIT SIGHUP SIGINT SIGQUIT SIGTERM
   while IFS= read -r line; do
     if echo "$line" | grep '^ *version ' > /dev/null; then
