@@ -16,10 +16,72 @@ elif [[ $# -gt 2 ]]; then
   report-error "too many arguments"
 fi
 
+get-latest-json() {
+  target=$1
+  api_url="https://api.github.com/repos/$target/releases/latest"
+  echo "Fetching $api_url" > /dev/stderr
+  curl -s "$api_url"
+}
+
+find-latest-version() {
+  json=$1
+  version=$(echo "$json" | jq -r .tag_name)
+  if [[ $version == "null" ]]; then
+    report-error "failed to get version: $json"
+  fi
+  echo "${version##v}"
+}
+
+find-download-url() {
+  json=$1
+  url=$(echo "$json" | sed -n '/browser_download_url.*darwin/s/^.*: *"\(.*\)".*$/\1/gp' | head -n1)
+  if [[ $url == "" ]]; then
+    report-error "failed to get download url: $json"
+  fi
+  echo "$url"
+}
+
+get-target-name() {
+  target=$1
+  echo "${target##*/}"
+}
+
+init() {
+  target=$1
+  name=$(get-target-name "$target")
+  formula_name=$(echo "$name" | perl -ne 'print ucfirst')
+  output="$name.rb"
+  echo "Creating $output" > /dev/stderr
+  json=$(get-latest-json "$target")
+  version=$(find-latest-version "$json")
+  echo "Found version $version" > /dev/stderr
+  url=$(find-download-url "$json")
+  sha256=$(curl -s -L "$url" | sha256sum | cut -f1 -d ' ')
+  homepage="https://github.com/$target"
+  echo "class $formula_name < Formula
+  homepage '$homepage'
+  version '$version'
+  url '$url'
+  sha256 '$sha256'
+
+  def install
+    bin.install '$name'
+  end
+
+  test do
+    system \"#{bin}/$name\", '--version'
+  end
+end" > "$output"
+  echo "Created $output" > /dev/stderr
+}
+
 main() {
   subcmd=$1
   target=$2
   case "$subcmd" in
+    init)
+      init "$target"
+      ;;
     *)
       report-error "unknown command: $subcmd"
       ;;
