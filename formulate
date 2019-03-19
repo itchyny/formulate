@@ -9,7 +9,7 @@ report-log() {
 }
 
 report-error() {
-  echo "$1" > /dev/stderr
+  echo "$cmdname: $1" > /dev/stderr
   exit 1
 }
 
