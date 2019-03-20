@@ -95,7 +95,7 @@ get-sha256() {
 init() {
   target=$1
   name=$(get-target-name "$target")
-  formula_name=$(echo "$name" | perl -ne 'print ucfirst')
+  formula_name=$(echo "$name" | perl -pe 's/(^|-)([a-z])/uc($2)/ge')
   output="$name.rb"
   report-log "Creating $output"
   json=$(get-latest-json "$target")
