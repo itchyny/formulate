@@ -1,0 +1,33 @@
+#compdef formulate
+
+_formulate()
+{
+
+  _arguments -C \
+    '1: :->cmds' \
+    '*: :->args' \
+    && ret=0
+
+  case $state in
+
+    (cmds)
+      list=(
+        "create:Creates a new formula"
+        "update:Updates a formula"
+      )
+      _describe -t commands 'Commands' list && ret=0
+      ;;
+
+    (args)
+      case $line[1] in
+        (update)
+          _files && ret=0
+          ;;
+        (*)
+          _nothing
+          ;;
+      esac
+      ;;
+
+  esac
+}
