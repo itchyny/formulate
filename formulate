@@ -18,17 +18,6 @@ usage() {
   echo "Usage: $cmdname create user/name or $cmdname update formula.rb"
 }
 
-if [[ $# -lt 1 ]]; then
-  usage
-  report-error "unknown command"
-elif [[ $1 != "-"* && $# -lt 2 ]]; then
-  usage
-  report-error "unknown target"
-elif [[ $# -gt 2 ]]; then
-  usage
-  report-error "too many arguments"
-fi
-
 get-latest-json() {
   target=$1
   api_url="https://api.github.com/repos/$target/releases/latest"
@@ -192,5 +181,16 @@ main() {
       ;;
   esac
 }
+
+if [[ $# -lt 1 ]]; then
+  usage
+  report-error "specify command"
+elif [[ $1 != "-"* && $# -lt 2 ]]; then
+  usage
+  report-error "specify target"
+elif [[ $# -gt 2 ]]; then
+  usage
+  report-error "too many arguments"
+fi
 
 main "$1" "${2:-}"
