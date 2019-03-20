@@ -94,7 +94,8 @@ create() {
   sha256=$(get-sha256 "$url")
   homepage="https://github.com/$target"
   git_url="https://github.com/$target.git"
-  echo "class $formula_name < Formula
+  cat > "$output" <<EOF
+class $formula_name < Formula
   homepage '$homepage'
   version '$version'
   url '$url'
@@ -106,9 +107,10 @@ create() {
   end
 
   test do
-    system \"#{bin}/$name\", '--version'
+    system "#{bin}/$name", '--version'
   end
-end" > "$output"
+end
+EOF
   report-log "Created $output"
 }
 
