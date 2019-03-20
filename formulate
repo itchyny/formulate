@@ -15,7 +15,7 @@ report-error() {
 }
 
 usage() {
-  echo "Usage: $cmdname create user/name or $cmdname update formula.rb"
+  echo "Usage: $cmdname create user/name or $cmdname update name.rb"
 }
 
 get-latest-json() {

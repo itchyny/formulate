@@ -4,7 +4,7 @@
 ## Usage
 ```shell
 formulate create user/name     # creates a new formula
-formulate update formula.rb    # updates a formula
+formulate update name.rb       # updates a formula
 ```
 
 ## Installation
