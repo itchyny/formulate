@@ -3,6 +3,7 @@
 set -euo pipefail
 
 cmdname="$(basename "${BASH_SOURCE[0]}")"
+version=0.0.1
 
 report-log() {
   echo "$1" > /dev/stderr
@@ -20,7 +21,7 @@ usage() {
 if [[ $# -lt 1 ]]; then
   usage
   report-error "unknown command"
-elif [[ $# -lt 2 ]]; then
+elif [[ $1 != "-"* && $# -lt 2 ]]; then
   usage
   report-error "unknown target"
 elif [[ $# -gt 2 ]]; then
@@ -180,6 +181,9 @@ main() {
     update)
       update "$2"
       ;;
+    --version|-v)
+      echo "$cmdname $version"
+      ;;
     *)
       usage
       report-error "unknown command: $subcmd"
@@ -187,4 +191,4 @@ main() {
   esac
 }
 
-main "$1" "$2"
+main "$1" "${2:-}"
