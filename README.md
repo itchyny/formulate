@@ -3,8 +3,8 @@
 
 ## Usage
 ```shell
-formulate init user/name     # creates a new formula
-formulate update formula.rb  # updates a formula
+formulate create user/name     # creates a new formula
+formulate update formula.rb    # updates a formula
 ```
 
 ## Installation

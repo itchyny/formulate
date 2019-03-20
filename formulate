@@ -15,7 +15,7 @@ report-error() {
 }
 
 usage() {
-  echo "Usage: $cmdname init user/name or $cmdname update formula.rb"
+  echo "Usage: $cmdname create user/name or $cmdname update formula.rb"
 }
 
 if [[ $# -lt 1 ]]; then
@@ -92,7 +92,7 @@ get-sha256() {
   echo "$shasum"
 }
 
-init() {
+create() {
   target=$1
   name=$(get-target-name "$target")
   formula_name=$(echo "$name" | perl -pe 's/(^|-)([a-z])/uc($2)/ge')
@@ -177,8 +177,8 @@ update() {
 main() {
   subcmd=$1
   case "$subcmd" in
-    init)
-      init "$2"
+    create)
+      create "$2"
       ;;
     update)
       update "$2"
