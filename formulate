@@ -32,25 +32,50 @@ get-latest-json() {
   target=$1
   api_url="https://api.github.com/repos/$target/releases/latest"
   report-log "Fetching $api_url"
-  curl -s "$api_url"
+  json=$(curl -s "$api_url")
+  if ! echo "$json" | grep '"message".*"Not Found"' > /dev/null; then
+    echo "$json"
+    return
+  fi
+  api_url="https://api.github.com/repos/$target/tags"
+  report-log "Fetching $api_url"
+  json=$(curl -s "$api_url")
+  if ! echo "$json" | grep '"message".*"Not Found"' > /dev/null; then
+    echo "$json"
+    return
+  fi
+  report-error "failed to get the latest release"
 }
 
 find-latest-version() {
   json=$1
-  version=$(echo "$json" | sed -n '/tag_name/s/^.*: *"\(.*\)".*$/\1/gp')
-  if [[ $version == "" ]]; then
-    report-error "failed to get version: $json"
+  version=$(echo "$json" | sed -n '/"tag_name"/s/^.*: *"\(.*\)".*$/\1/gp' | head -n1)
+  if [[ $version != "" ]]; then
+    echo "${version##v}"
+    return
   fi
-  echo "${version##v}"
+  version=$(echo "$json" | sed -n '/"name"/s/^.*: *"\(.*\)".*$/\1/gp' | head -n1)
+  if [[ $version != "" ]]; then
+    echo "${version##v}"
+    return
+  fi
+  report-error "failed to get version: $json"
 }
 
 find-download-url() {
-  json=$1
+  target=$1
+  json=$2
   url=$(echo "$json" | sed -n '/browser_download_url.*darwin/s/^.*: *"\(.*\)".*$/\1/gp' | head -n1)
-  if [[ $url == "" ]]; then
-    report-error "failed to get download url: $json"
+  if [[ $url != "" ]]; then
+    echo "$url"
+    return
   fi
-  echo "$url"
+  if echo "$json" | grep '"zipball_url"' > /dev/null; then
+    name=$(echo "$json" | sed -n '/"name"/s/^.*: *"\(.*\)".*$/\1/gp' | head -n1)
+    echo "https://github.com/$target/archive/$name.zip"
+    return
+  fi
+  report-error "failed to get download url: $json"
 }
 
 get-target-name() {
@@ -75,7 +100,7 @@ init() {
   json=$(get-latest-json "$target")
   version=$(find-latest-version "$json")
   report-log "Found version $version"
-  url=$(find-download-url "$json")
+  url=$(find-download-url "$target" "$json")
   sha256=$(get-sha256 "$url")
   homepage="https://github.com/$target"
   echo "class $formula_name < Formula
