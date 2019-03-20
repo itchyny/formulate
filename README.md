@@ -1,4 +1,6 @@
 # formulate
+### Homebrew formula managing script
+
 ## Usage
 ```shell
 formulate init user/name     # creates a new formula
