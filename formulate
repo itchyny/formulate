@@ -97,7 +97,12 @@ end" > "$output"
 
 get-target-from-formula() {
   target_file=$1
-  sed -n "/homepage.*github.com/s|^.*github.com/\\(.*\\)'|\\1|gp" < "$target_file" | head -n1
+  sed -n "/homepage.*github.com/s/^.*github.com\/\\(.*\\)'.*/\\1/gp" < "$target_file" | head -n1
+}
+
+get-version-from-formula() {
+  target_file=$1
+  sed -n "/^ *version /s/^.*version *'\\(.*\\)'.*/\\1/gp" < "$target_file" | head -n1
 }
 
 update() {
@@ -107,9 +112,17 @@ update() {
   if [[ $target == "" ]]; then
     report-error "failed to find target: $output"
   fi
+  current_version=$(get-version-from-formula "$output")
+  if [[ $current_version == "" ]]; then
+    report-error "failed to find version: $output"
+  fi
   name=$(get-target-name "$target")
   json=$(get-latest-json "$target")
   version=$(find-latest-version "$json")
+  if [[ $current_version == "$version" ]]; then
+    report-log "Already the latest version $version"
+    exit 0
+  fi
   report-log "Found version $version"
   url=""
   outtmp=$(mktemp -t "$name.XXXXXXXX")
