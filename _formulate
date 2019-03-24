@@ -5,6 +5,7 @@ _formulate()
   local -a _commands
 
   _arguments -C \
+    '(-v --version)'{-v,--version}'[print the version]' \
     '1: :->cmds' \
     '*:: :->args' \
     && ret=0
