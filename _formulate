@@ -6,7 +6,7 @@ _formulate()
 
   _arguments -C \
     '1: :->cmds' \
-    '*: :->args' \
+    '*:: :->args' \
     && ret=0
 
   case $state in
@@ -20,7 +20,7 @@ _formulate()
       ;;
 
     (args)
-      case $line[1] in
+      case $words[1] in
         (update)
           _files && ret=0
           ;;
