@@ -2,6 +2,7 @@
 
 _formulate()
 {
+  local -a _commands
 
   _arguments -C \
     '1: :->cmds' \
@@ -11,11 +12,11 @@ _formulate()
   case $state in
 
     (cmds)
-      list=(
+      _commands=(
         "create:Creates a new formula"
         "update:Updates a formula"
       )
-      _describe -t commands 'Commands' list && ret=0
+      _describe -t commands 'commands' _commands && ret=0
       ;;
 
     (args)
