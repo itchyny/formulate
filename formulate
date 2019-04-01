@@ -150,7 +150,7 @@ update() {
     if echo "$line" | grep '^ *version ' > /dev/null; then
       line=$(echo "$line" | sed 's/[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/'"$version"'/')
     elif echo "$line" | grep '^ *url ' > /dev/null; then
-      line=$(echo "$line" | sed 's/[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/'"$version"'/')
+      line=$(echo "$line" | sed 's/[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}/'"$version"'/g')
       url=$(echo "$line" | sed "s/^.*'\\(.*\\)'.*$/\\1/")
     elif echo "$line" | grep '^ *sha256 ' > /dev/null; then
       if [[ $url == "" ]]; then
