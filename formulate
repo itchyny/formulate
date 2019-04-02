@@ -18,18 +18,25 @@ usage() {
   echo "Usage: $cmdname create user/name or $cmdname update name.rb"
 }
 
+git-api() {
+  url=$1
+  report-log "Fetching $url"
+  token=$(git config --global github.token || :)
+  authorization=()
+  if [[ -n $token ]]; then
+    authorization=(-H "Authorization: token $token")
+  fi
+  curl "${authorization[@]:-}" -s "$url"
+}
+
 get-latest-json() {
   target=$1
-  api_url="https://api.github.com/repos/$target/releases/latest"
-  report-log "Fetching $api_url"
-  json=$(curl -s "$api_url")
+  json=$(git-api "https://api.github.com/repos/$target/releases/latest")
   if ! echo "$json" | grep '"message".*"Not Found"' > /dev/null; then
     echo "$json"
     return
   fi
-  api_url="https://api.github.com/repos/$target/tags"
-  report-log "Fetching $api_url"
-  json=$(curl -s "$api_url")
+  json=$(git-api "https://api.github.com/repos/$target/tags")
   if ! echo "$json" | grep '"message".*"Not Found"' > /dev/null; then
     echo "$json"
     return
