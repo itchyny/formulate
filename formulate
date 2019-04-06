@@ -83,8 +83,7 @@ get-target-name() {
 get-sha256() {
   url=$1
   report-log "Fetching $url"
-  shasum=$(curl -L -f "$url" | sha256sum | cut -f1 -d ' ')
-  if [[ $? -ne 0 ]]; then
+  if ! shasum=$(curl -L -f "$url" | sha256sum | cut -f1 -d ' '); then
     report-error "failed to get sha256 sum: $url"
   fi
   report-log "Got sha256sum: $shasum"
