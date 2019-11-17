@@ -67,9 +67,13 @@ find-download-url() {
     echo "$url"
     return
   fi
+  url=$(echo "$json" | sed -n '/browser_download_url/s/^.*: *"\(.*\)".*$/\1/gp' | head -n1)
+  if [[ $url != "" ]]; then
+    echo "$url"
+    return
+  fi
   if echo "$json" | grep '"zipball_url"' > /dev/null; then
-    name=$(echo "$json" | sed -n '/"name"/s/^.*: *"\(.*\)".*$/\1/gp' | head -n1)
-    echo "https://github.com/$target/archive/$name.zip"
+    echo "$json" | sed -n '/"zipball_url"/s/^.*: *"\(.*\)".*$/\1/gp' | head -n1
     return
   fi
   report-error "failed to get download url: $json"
