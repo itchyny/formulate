@@ -6,11 +6,11 @@ cmdname="$(basename "${BASH_SOURCE[0]}")"
 version=0.0.6
 
 report-log() {
-  echo "$1" > /dev/stderr
+  echo "$1" >&2
 }
 
 report-error() {
-  echo "$cmdname: $1" > /dev/stderr
+  echo "$cmdname: $1" >&2
   exit 1
 }
 
