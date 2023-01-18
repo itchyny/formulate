@@ -3,25 +3,27 @@ name: CI
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Test
-      run: |
-        ./formulate create itchyny/mackerel-plugin-battery
-        ./formulate create itchyny/mackerel-plugin-dice
-        ./formulate create itchyny/gojq
-        ./formulate create itchyny/miv
-        ./formulate create itchyny/git-branch-name
-        ./formulate update git-branch-name.rb
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Show version
-      run: ./formulate --version
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Test
+        run: |
+          ./formulate create itchyny/mackerel-plugin-battery
+          ./formulate create itchyny/mackerel-plugin-dice
+          ./formulate create itchyny/gojq
+          ./formulate create itchyny/miv
+          ./formulate create itchyny/git-branch-name
+          ./formulate update git-branch-name.rb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Show version
+        run: ./formulate --version
