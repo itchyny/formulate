@@ -3,7 +3,7 @@ set -euo pipefail
 shopt -s extglob
 
 cmdname="$(basename "${BASH_SOURCE[0]}")"
-version=0.0.7
+version=0.0.8
 
 abort() {
   echo "$1" >&2
