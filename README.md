@@ -13,10 +13,9 @@ formulate update name.rb       # updates a formula
 brew install itchyny/tap/formulate
 ```
 
-### Or just copy the script
+### Download the script
 ```shell
-git clone https://github.com/itchyny/formulate
-cd formulate/
+curl -sSfLO https://raw.githubusercontent.com/itchyny/formulate/main/formulate && chmod +x formulate
 ```
 
 ## Author
