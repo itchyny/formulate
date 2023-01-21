@@ -2,8 +2,8 @@
 set -euo pipefail
 shopt -s extglob
 
-cmdname="$(basename "${BASH_SOURCE[0]}")"
-version=0.0.8
+readonly CMDNAME="${BASH_SOURCE[0]##*/}"
+readonly VERSION=0.0.8
 
 abort() {
   echo "$1" >&2
@@ -11,7 +11,7 @@ abort() {
 }
 
 usage() {
-  echo "Usage: $cmdname create user/name or $cmdname update name.rb"
+  echo "Usage: $CMDNAME create user/name or $CMDNAME update name.rb"
 }
 
 github-api() {
@@ -116,22 +116,25 @@ update() {
 }
 
 if [[ $# -lt 1 ]]; then
-  usage && abort "$cmdname: specify command"
+  usage && abort "$CMDNAME: specify command"
 elif [[ $# -gt 2 ]]; then
-  usage && abort "$cmdname: too many arguments"
+  usage && abort "$CMDNAME: too many arguments"
 else
   case "$1" in
   create | update)
     if [[ $# -ne 2 ]]; then
-      usage && abort "$cmdname: specify repository or formula file"
+      usage && abort "$CMDNAME: specify repository or formula file"
     fi
     "$@"
     ;;
   --version | -v)
-    echo "$cmdname $version"
+    echo "$CMDNAME $VERSION"
+    ;;
+  --help | -h)
+    usage
     ;;
   *)
-    usage && abort "$cmdname: unknown command: $1"
+    usage && abort "$CMDNAME: unknown command: $1"
     ;;
   esac
 fi
