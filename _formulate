@@ -2,34 +2,34 @@
 
 _formulate()
 {
-  local -a _commands
+  local -i ret=1
 
   _arguments -C \
-    '(-v --version)'{-v,--version}'[print the version]' \
-    '1: :->cmds' \
+    '(- : *)'{-v,--version}'[display version information]' \
+    '(- : *)'{-h,--help}'[display help information]' \
+    ': :->cmds' \
     '*:: :->args' \
     && ret=0
 
   case $state in
-
     (cmds)
-      _commands=(
+      local -a commands=(
         "create:Creates a new formula"
         "update:Updates a formula"
       )
-      _describe -t commands 'commands' _commands && ret=0
+      _describe -t commands 'command' commands && ret=0
       ;;
-
     (args)
       case $words[1] in
-        (update)
-          _files && ret=0
+        (create)
+          _arguments '*:repository name (user/name)' && ret=0
           ;;
-        (*)
-          _nothing
+        (update)
+          _files -g '*.rb' && ret=0
           ;;
       esac
       ;;
-
   esac
+
+  return ret
 }
