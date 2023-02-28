@@ -14,15 +14,15 @@ _formulate()
   case $state in
     (cmds)
       local -a commands=(
-        "create:Creates a new formula"
-        "update:Updates a formula"
+        'create:Creates a new formula'
+        'update:Updates a formula'
       )
       _describe -t commands 'command' commands && ret=0
       ;;
     (args)
       case $words[1] in
         (create)
-          _arguments '*:repository name (user/name)' && ret=0
+          _message 'repository name (owner/repo)' && ret=0
           ;;
         (update)
           _files -g '*.rb' && ret=0
