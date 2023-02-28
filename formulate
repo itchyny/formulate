@@ -3,7 +3,7 @@ set -euo pipefail
 shopt -s extglob
 
 readonly CMDNAME="${BASH_SOURCE[0]##*/}"
-readonly VERSION=0.0.10
+readonly VERSION=0.0.11
 
 abort() {
   echo "$1" >&2
