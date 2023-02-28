@@ -19,7 +19,7 @@ github-api() {
   url="https://api.github.com$1"
   echo "Fetching: $url" >&2
   params=()
-  if token="$(git config --global github.token)"; then
+  if token=$(git config --global github.token); then
     params+=(-H "Authorization: token $token")
   fi
   curl -sSf ${params[@]:+"${params[@]}"} "$url" 2> >(sed 's/^/Got error: /' >&2)
@@ -52,10 +52,10 @@ create() {
   bin_name="${repository##*/}"
   formula="$bin_name.rb"
   echo "Creating: $formula" >&2
-  release="$(get-latest-release "$repository")"
-  version="$(get-latest-version <<<"$release")"
+  release=$(get-latest-release "$repository")
+  version=$(get-latest-version <<<"$release")
   echo "Found version: $version" >&2
-  url="$(get-download-url <<<"$release")"
+  url=$(get-download-url <<<"$release")
   cat >"$formula" <<EOF
 class $(perl -pe 's/(^|-)(\w)/\U$2/g' <<<"$bin_name") < Formula
   homepage 'https://github.com/$repository'
@@ -80,33 +80,33 @@ update() {
   local formula repository current_version release version line url
   formula="$1"
   echo "Updating: $formula" >&2
-  if ! repository="$(sed -n -E '/^ *homepage /s/.*github\.com\/(.*)'\''.*/\1/p' "$formula" | head -n1 | grep ^)"; then
+  if ! repository=$(sed -n -E '/^ *homepage /s/.*github\.com\/(.*)'\''.*/\1/p' "$formula" | head -n1 | grep ^); then
     abort "Failed to find the repository: $formula"
   fi
-  if ! current_version="$(sed -n -E '/^ *version /s/.*'\''(.*)'\''.*/\1/p' "$formula" | head -n1 | grep ^)"; then
+  if ! current_version=$(sed -n -E '/^ *version /s/.*'\''(.*)'\''.*/\1/p' "$formula" | head -n1 | grep ^); then
     abort "Failed to find the current version: $formula"
   fi
-  release="$(get-latest-release "$repository")"
-  version="$(get-latest-version <<<"$release")"
+  release=$(get-latest-release "$repository")
+  version=$(get-latest-version <<<"$release")
   if [[ "$current_version" == "$version" ]]; then
     echo "Already the latest version: $version" >&2
     return
   fi
   echo "Found version: $version" >&2
-  temp_file="$(mktemp)" # global variable for trap
+  temp_file=$(mktemp) # global variable for trap
   trap 'rm -rf "$temp_file"' EXIT
   while IFS= read -r line; do
-    case "$line" in
+    case $line in
     *( )version\ *)
-      line="$(sed -E 's/[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}/'"$version"'/' <<<"$line")"
+      line=$(sed -E 's/[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}/'"$version"'/' <<<"$line")
       ;;
     *( )url\ *)
-      line="$(sed -E 's/[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}/'"$version"'/g' <<<"$line")"
-      url="$(cut -d "'" -f2 <<<"$line")"
+      line=$(sed -E 's/[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}/'"$version"'/g' <<<"$line")
+      url=$(cut -d "'" -f2 <<<"$line")
       ;;
     *( )sha256\ *)
       [[ -z "$url" ]] && abort "URL not found: $line"
-      line="$(sed -E "s/'.*'/'$(get-sha256-checksum "$url")'/" <<<"$line")"
+      line=$(sed -E "s/'.*'/'$(get-sha256-checksum "$url")'/" <<<"$line")
       ;;
     esac
     echo "$line"
@@ -120,7 +120,7 @@ if [[ $# -lt 1 ]]; then
 elif [[ $# -gt 2 ]]; then
   usage && abort "$CMDNAME: too many arguments"
 else
-  case "$1" in
+  case $1 in
   create | update)
     if [[ $# -ne 2 ]]; then
       usage && abort "$CMDNAME: specify repository or formula file"
