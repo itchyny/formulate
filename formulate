@@ -46,21 +46,23 @@ get-sha256-checksum() {
 }
 
 create() {
-  local repository bin_name formula release version url
+  local repository bin_name formula class_name release version url sha256sum
   repository="$1"
   bin_name="${repository##*/}"
   formula="$bin_name.rb"
   echo "Creating: $formula" >&2
+  class_name=$(perl -pe 's/(^|-)(\w)/\U$2/g' <<<"$bin_name")
   release=$(get-latest-release "$repository")
   version=$(get-latest-version <<<"$release")
   echo "Found version: $version" >&2
   url=$(get-download-url <<<"$release")
+  sha256sum=$(get-sha256-checksum "$url")
   cat >"$formula" <<EOF
-class $(perl -pe 's/(^|-)(\w)/\U$2/g' <<<"$bin_name") < Formula
+class $class_name < Formula
   homepage 'https://github.com/$repository'
   version '$version'
   url '$url'
-  sha256 '$(get-sha256-checksum "$url")'
+  sha256 '$sha256sum'
   head 'https://github.com/$repository.git'
 
   def install
@@ -76,7 +78,7 @@ EOF
 }
 
 update() {
-  local formula repository current_version release version line url
+  local formula repository current_version release version line url sha256sum
   formula="$1"
   echo "Updating: $formula" >&2
   if ! repository=$(sed -n -E '/^ *homepage /s/.*github\.com\/(.*)'\''.*/\1/p' "$formula" | head -n1 | grep ^); then
@@ -105,7 +107,8 @@ update() {
       ;;
     *( )sha256\ *)
       [[ -z "$url" ]] && abort "URL not found: $line"
-      line=$(sed -E "s/'.*'/'$(get-sha256-checksum "$url")'/" <<<"$line")
+      sha256sum=$(get-sha256-checksum "$url")
+      line=$(sed -E "s/'.*'/'$sha256sum'/" <<<"$line")
       ;;
     esac
     echo "$line"
