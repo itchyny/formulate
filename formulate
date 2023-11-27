@@ -15,14 +15,13 @@ usage() {
 }
 
 github-api() {
-  local url params token
-  url="https://api.github.com$1"
-  echo "Fetching: $url" >&2
+  local params token
   params=()
   if token=$(git config --global github.token); then
     params+=(-H "Authorization: token $token")
   fi
-  curl -sSf ${params[@]:+"${params[@]}"} "$url" 2> >(sed 's/^/Got error: /' >&2)
+  echo "https://api.github.com$1" | tee >(sed 's/^/Fetching: /' >&2) |
+    xargs curl -sSf ${params[@]:+"${params[@]}"} 2> >(sed 's/^/Got error: /' >&2)
 }
 
 get-latest-release() {
@@ -41,8 +40,8 @@ get-download-url() {
 }
 
 get-sha256-checksum() {
-  echo "Fetching: $1" >&2
-  curl -sSfL "$1" | sha256sum | cut -d ' ' -f1 | tee >(sed 's/^/Got SHA-256 checksum: /' >&2) ||
+  echo "$1" | tee >(sed 's/^/Fetching: /' >&2) |
+    xargs curl -sSfL | sha256sum | cut -d ' ' -f1 | tee >(sed 's/^/Got SHA-256 checksum: /' >&2) ||
     abort "Failed to get the SHA-256 checksum: $1"
 }
 
