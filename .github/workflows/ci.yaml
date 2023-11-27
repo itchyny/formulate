@@ -6,24 +6,35 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -euxo pipefail {0}
+
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Test
         run: |
-          ./formulate create itchyny/mackerel-plugin-battery
-          ./formulate create itchyny/mackerel-plugin-dice
+          git config --global github.token '${{ github.token }}'
           ./formulate create itchyny/gojq
           ./formulate create itchyny/miv
           ./formulate create itchyny/git-branch-name
+          ./formulate create itchyny/mackerel-plugin-dice
+          ./formulate create itchyny/mackerel-plugin-battery
+          sed -i -E 's/[0-9]+(\.[0-9]+)+/0.0.0/g' ./*.rb
+          ./formulate update gojq.rb
+          ./formulate update miv.rb
           ./formulate update git-branch-name.rb
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ./formulate update mackerel-plugin-dice.rb
+          ./formulate update mackerel-plugin-battery.rb
       - name: Show version
         run: ./formulate --version
+      - name: Run shellcheck
+        run: shellcheck ./formulate
